@@ -1,0 +1,46 @@
+{
+  "_comment": "Runtime configuration for byokrouter-reasoning-effort.",
+  "_comment2": "This file is safe to COMMIT: keep secrets out of it by using ${VAR} references, which are resolved from the environment or .env at startup.",
+  "_comment3": "Precedence: environment > .env > this file > defaults.",
+  "_comment4": "Keys starting with _ are ignored by the loader.",
+
+  "upstream": "${UPSTREAM_URL}",
+
+  "listen": {
+    "bind": "${REASONING_PROXY_BIND}",
+    "port": 8798
+  },
+
+  "auth": {
+    "_comment": "Generate a client token with: node -e \"console.log(require('crypto').randomBytes(16).toString('hex'))\"",
+    "clientToken": "${REASONING_PROXY_CLIENT_TOKEN}",
+    "adminToken": "${REASONING_PROXY_ADMIN_TOKEN}",
+    "noAdmin": false
+  },
+
+  "keys": {
+    "_comment": "Preferred: leave this as the env reference. Alternatively point keysFile at a gitignored JSON file with { \"default\": \"...\", \"models\": {} }.",
+    "default": "${UPSTREAM_API_KEY}",
+    "models": {}
+  },
+
+  "allowlist": {
+    "_comment": "Only sources matching these prefixes may use the proxy. Judged against x-forwarded-for when trustForwarded is on (needed behind NAT).",
+    "prefixes": [],
+    "strict": false,
+    "trustForwarded": false
+  },
+
+  "reasoning": {
+    "_comment": "Tier per model. null / \"\" / \"default\" = forward NO reasoning_effort, i.e. the provider's own default.",
+    "_comment2": "Allowed: none | low | medium | high | xhigh | max",
+    "default": "max",
+    "models": {
+      "GLM-5.3-Flash": "max",
+      "DeepSeek-V4.1-Flash": "max",
+      "Qwen3.8-Flash": "max",
+      "Qwen3.8-Max": "medium",
+      "Kimi-K3": "medium"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+# --- secrets (never commit) -------------------------------------------------
+.env
+.env.*
+!.env.example
+keys.json
+config.json
+*.token
+*.port
+
+# --- runtime state ----------------------------------------------------------
+.state/
+*.pid
+paratera-allowlist.txt
+paratera-firewall-allowlist.txt
+
+# --- Trae state DB backups (contain account data) ---------------------------
+backups/
+*.bak
+*.vscdb
+*.vscdb.backup
+
+# --- local diagnostics (contain machine IPs / client addresses) --------------
+_probe/
+*.log
+
+# --- python / pixi ----------------------------------------------------------
+.pixi/
+__pycache__/
+*.pyc
+.pytest_cache/
+.pytest-tmp/
+
+# --- editors / OS -----------------------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

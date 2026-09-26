@@ -1,0 +1,14 @@
+# Keep line endings predictable: the repo is developed on Windows but the core is
+# portable, and the .bat/.vbs launchers in platforms/ are ASCII-only on purpose.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.vbs text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.lock binary
