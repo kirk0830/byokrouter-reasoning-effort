@@ -216,6 +216,20 @@ export function normaliseReasoning(reasoning) {
 // --- main entry --------------------------------------------------------------
 
 /**
+ * Read a single-value state file written by the launchers (a token, a port).
+ * These live in `.state/` (gitignored) and are the launcher's own storage, so a
+ * rotation there must win over a stale value lazily left in `.env`.
+ */
+function readStateValue(dir, name) {
+  try {
+    const v = fs.readFileSync(path.join(dir, '.state', name), 'utf8').trim();
+    return v || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * @param {object} [opts]
  * @param {string} [opts.dir]            directory holding the config/env files
  * @param {string} [opts.configFile]     explicit JSON config path
@@ -226,7 +240,26 @@ export function loadConfig(opts = {}) {
   const dir = opts.dir || process.cwd();
   const envFile = opts.envFile || process.env.BYOKROUTER_ENV_FILE || path.join(dir, DEFAULT_ENV_FILE);
   const envFileValues = loadEnvFile(envFile);
-  const { expandName, envValue } = makeLookups(envFileValues, opts.extraAliases || {});
+  const { expandName } = makeLookups(envFileValues, opts.extraAliases || {});
+
+  // Ordering rule, stated once: the launcher's own state beats `.env`, because
+  // rotating a token must actually take effect. Everything else: env > .env >
+  // config file > defaults.
+  const stateToken = readStateValue(dir, 'client.token');
+  const stateAdminToken = readStateValue(dir, 'admin.token');
+  const envValue = (canonical) => {
+    const direct = process.env[canonical];
+    if (direct !== undefined && direct !== '') return direct;
+    if (canonical === 'BYOKROUTER_CLIENT_TOKEN' && stateToken) return stateToken;
+    if (canonical === 'BYOKROUTER_ADMIN_TOKEN' && stateAdminToken) return stateAdminToken;
+    const fromEnvFile = envFileValues[canonical];
+    if (fromEnvFile !== undefined && fromEnvFile !== '') return fromEnvFile;
+    for (const alias of (LEGACY_ALIASES[canonical] || [])) {
+      const a = process.env[alias] ?? envFileValues[alias];
+      if (a !== undefined && a !== '') return a;
+    }
+    return undefined;
+  };
 
   const configFile = opts.configFile || envValue('BYOKROUTER_CONFIG') || path.join(dir, DEFAULT_CONFIG_FILE);
   const raw = readJsonSafe(configFile);
